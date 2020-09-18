@@ -29,6 +29,8 @@ class page {
     if(this.itemName.value == "" || this.itemValue.value == "" || isNaN(this.itemValue.value) || Number(this.itemValue.value < 0)){
       this.form.style = 'border: 10px solid red';
       return;
+    }else{
+      this.form.style = 'border: 10px solid green';
     }
     const element = document.createElement('div');
     element.append(`name: ${this.itemName.value} price: ${this.itemValue.value}`);
