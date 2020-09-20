@@ -1,0 +1,22 @@
+  <DOCTYPE! html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>PWC</title>
+        </head>
+        <body>
+            <h>POKEMON WEIGHT CALCULATOR</h>
+            <div>
+                <div>
+                    <div class="input-bar">Pokename: <input type="text" id="item-name"></div>
+                    <div class="add-button"><button id="add-item">Search</button></div>
+                    <div id="total" style="margin-left: 10px; font-size: large; font-weight: bold;">Total: <span class="total-value">0</span></div>
+                </div>
+                <div>
+                    <ul id="item-list" class="items"></ul>
+                </div>
+            </div>  
+            <script src="./utils.js"></script>
+            <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        </body>
+    </html>
