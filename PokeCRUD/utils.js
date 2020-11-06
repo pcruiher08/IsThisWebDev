@@ -4,14 +4,14 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
       document.getElementById("getAll").addEventListener("click", getAll);
       document.getElementById("getID").addEventListener("click", getName);
       document.getElementById("delete").addEventListener("click", deleteCard);
-      document.getElementById("update").addEventListener("click", handleUpdate);
-    } else {
-      document.getElementById("Play").addEventListener("click", PlayPokemon);
-      document.getElementById("Get-Cards").addEventListener("click", getPokecards);
+      document.getElementById("update").addEventListener("click", processUpdate);
+    }else{
+      document.getElementById("spielen").addEventListener("click", startGame);
+      document.getElementById("gimmeCards").addEventListener("click", getTheCards);
     }
   });
 
-  function PlayPokemon() {
+  function startGame() {
     axios
       .get(`http://localhost:3000/getGame`)
       .then((response) => {
@@ -21,38 +21,29 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
         localStorage.setItem("GameID", id);
         let aux = localStorage.getItem("GameID");
         console.log(aux);
-        document.getElementById("CON").innerHTML = "Connected...";
-  
-        axios.post("http://localhost:3000/createGame", {params : {
-           id : localStorage.getItem("GameID")
-         }})
-        .then((response) => {
-  
-        });
-        updateGameStat();
-        setInterval(updateGameStat, 5000);
-      })
-      .catch((err) => {
-      });
-  }
+        document.getElementById("yaSeConecto").innerHTML = "Cards Space";
+        axios.post("http://localhost:3000/createGame", {params : { id : localStorage.getItem("GameID")}}).then((response) => { });
+        updateGame();
+        setInterval(updateGame, 5000);
+      }).catch((err) => {});}
 
-  function getPokecards() {
+  function getTheCards() {
     axios
-      .get(`http://localhost:3000/getGameCards`, {
+      .get(`http://localhost:3000/getCards`, {
         params: {
           id: localStorage.getItem("GameID"),
         },
       })
       .then((response) => {
-        updateGameStat();
+        updateGame();
       })
       .catch((err) => {
       });
   }
   
-  function updateGameStat() {
+  function updateGame() {
     axios
-      .get(`http://localhost:3000/updateStat`, {
+      .get(`http://localhost:3000/update`, {
         params: {
           id: localStorage.getItem("GameID"),
         },
@@ -71,18 +62,11 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
       });
   }
   
-  let get_element_li = (
-    name,
-    id,
-    weight,
-    height,
-    base_experience,
-    image,
-    types
-  ) => {
+  let byli = (name,id,weight,height,base_experience,image,types) => {
     return `<div class="added-pokemon pokecard" >
             <h1>
-                Name: ${name} id: ${id} 
+                Name: ${name} 
+                <h1> id: ${id} </h1> 
             </h1> 
             <div>
                 <img src="${image}">
@@ -99,11 +83,7 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
             </div>`;
   };
   
-  let get_element_li_not_pokemon = (
-    name,
-    type,
-    data
-  ) => {
+  let byliItem = (name,type,data) => {
     return `<div class="added-pokemon pokecard">
                 <h1>
                     Name: ${name} Type Card: ${type} 
@@ -114,104 +94,40 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
             </div>`;
   };
   
-  function handleUpdate(){
+  function processUpdate(){
     let name = document.querySelector("#update-pokemon").value;
     let data = document.querySelector("#data-update").value
     axios
-    .put(`http://localhost:3000/put/${name}`, {
-      params: {
-      name : name,
-      data : data
-    }})
-      .then((response) => {
-      })
-      .catch((err) => {
-      });
+    .put(`http://localhost:3000/put/${name}`, {params: {name : name,data : data}})
+      .then((response) => {})
+      .catch((err) => {});
   }
+  
   function addPokemon(datos) {
-    let pulled = datos.data
     let typeNames = [];
-    let arrayTypes = pulled.typeNames
-    arrayTypes.forEach((typeData) => {
-       typeNames.push(typeData);
-     });
-    let retrievedTemp = get_element_li(
-      pulled.name,
-      pulled.id,
-      pulled.weight,
-      pulled.height,
-      pulled.base_experience,
-      pulled.sprites.front_default,
-      typeNames
-    );
-    document.getElementById("items").innerHTML += retrievedTemp;
+    datos.data.typeNames.forEach((typeData) => {typeNames.push(typeData);});
+    document.getElementById("items").innerHTML += byli(datos.data.name,datos.data.id,datos.data.weight,datos.data.height,datos.data.base_experience,datos.data.sprites.front_default,typeNames);
   }
   
   function addCard(datos){
-    let pulled = datos
-    let retrievedTemp = get_element_li_not_pokemon(pulled.name, pulled.typecard, pulled.data)
-    document.getElementById("items").innerHTML += retrievedTemp;
+    document.getElementById("items").innerHTML += byliItem(datos.name, datos.typecard, datos.data);
   }
   
   function deleteCard(){
-    let pokename = document.querySelector("#delete-pokemon").value;
-    pokename = pokename.toLowerCase();
     axios
-      .delete(`http://localhost:3000/delete/${pokename}`)
+      .delete(`http://localhost:3000/delete/${ document.querySelector("#delete-pokemon").value.toLowerCase()}`)
       .then((response) => { })
       .catch((err) => { });
   }
-  
-  function getAll(){
-    document.getElementById("items").innerHTML = ""
-    axios
-      .get(`http://localhost:3000/get`)
-      .then((response) => {
-        console.log("response", response)
-        pokearray = response.data
-        pokearray.forEach(element => {
-          if(element.typecard == "pokemon"){
-            addPokemon(element)
-          }else{
-            addCard(element)
-          }
-        })
-      })
-      .catch((err) => {
-      });
-  }
-  
-  function getName(){
-    document.getElementById("items").innerHTML = ""
-    let pokename = document.querySelector("#get-pokemon-name").value;
-    pokename = pokename.toLowerCase();
-    axios
-      .get(`http://localhost:3000/get/${pokename}`)
-      .then((response) => {
-        pokearray = response.data
-        pokearray.forEach(element => {
-          if(element.typecard == "pokemon"){
-            addPokemon(element)
-          }else{
-            addCard(element)
-          }
-        })
-      })
-      .catch((err) => { errorAtRequest(err); });
-  }
-  
+    
   function getPokemon() {
-    let pokename = document.querySelector("#pokemon-name").value;
-    pokename = pokename.toLowerCase();
-    let poketype = document.querySelector("#type").value;
-    let pokedata = document.querySelector("#data").value;
     let error = document.getElementById("error");
     axios
       .post(`http://localhost:3000/add`, {
         params: {
-        type : poketype,
-        name : pokename,
-        data : pokedata
+        type : document.querySelector("#type").value,
+        name : document.querySelector("#pokemon-name").value.toLowerCase(),
+        data : document.querySelector("#data").value
       }})
       .then((res) => {
       })
@@ -221,4 +137,34 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
   }
   let errorAtRequest = (err) => {
     alert("pokemon not found in db")
+  }
+
+  function getAll(){
+    document.getElementById("items").innerHTML = ""
+    axios
+      .get(`http://localhost:3000/get`)
+      .then((response) => {
+        pokearray = response.data
+        pokearray.forEach(element => {
+          if(element.typecard == "pokemon"){
+            addPokemon(element)
+          }else{
+            addCard(element)}
+          })}).catch((err) => {});
+  }
+  
+  function getName(){
+    document.getElementById("items").innerHTML = ""
+    axios
+      .get(`http://localhost:3000/get/${document.querySelector("#get-pokemon-name").value.toLowerCase()}`)
+      .then((response) => {
+        response.data.forEach(element => {
+          if(element.typecard == "pokemon"){
+            addPokemon(element)
+          }else{
+            addCard(element)
+          }
+        })
+      })
+      .catch((err) => { errorAtRequest(err); });
   }

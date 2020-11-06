@@ -1,76 +1,59 @@
-const express = require("express");
-const app = express();
 const cors = require("cors");
 const axios = require("axios");
+const express = require("express");
+const app = express();
 app.use(express.json());
 app.use(cors());
-app.use(
-  express.urlencoded({
-    extended: true,
-  })
-);
+app.use(express.urlencoded({extended: true,}));
 
 var MongoClient = require('mongodb').MongoClient;
 var url = 'mongodb+srv://dbuser:dbuser@cluster0-jyf2g.mongodb.net/PokeDB?retryWrites=true&w=majority';
 MongoClient.connect(url, { useUnifiedTopology: true },function(err, db) {
   if (err) throw err;
-  var dbo = db.db("PokeDB");
-
+  var instanceOfMongoDataBase = db.db("PokeDB");
   app.get("/getGame", function (req, res) {
-    let oldGames = [];
-    dbo
-      .collection("Juegos")
-      .find()
-      .project({ _id: 0, id: 1 })
-      .toArray(function (err, result) {
-        result.forEach((id) => {
-          oldGames.push(id.id);
-        });
-        if (oldGames.length == 1){
+    let prev = [];
+    instanceOfMongoDataBase.collection("Juegos").find().project({ _id: 0, id: 1 }).toArray(function (err, result) {
+        result.forEach((id) => { prev.push(id.id);});
+        //res.send(String(prev.length + 1));
+        if (prev.length == 0){
+          res.send(String(1));
+        }
+        if (prev.length == 1){
           res.send(String(2));
         }
-        
-        var max = Math.max(...oldGames);
-        console.log("New MAX:")
-        console.log(max++);
-        res.send(String(max));
-        
+        res.send(String(Math.max(...prev) + 1));
       });
   });
 
-  app.get("/getGameCards", function (req, res){
-    let params = getParams(req);
-    let playCards = [];
-    let gameID = params.id;
-    dbo
+  app.get("/getCards", function (req, res){
+    let params = getInnerData(req);
+    let arrOfCards = [];
+    let gameNumber = params.id;
+    instanceOfMongoDataBase
       .collection("mazoDB")
       .find()
       .toArray(function (err, result){
         for (let i = 0; i < 5; i++) {
           let index = Math.floor(Math.random() * 60);
           const element = result[index];
-          playCards.push(element);
+          arrOfCards.push(element);
         }
-        let query = { id: gameID };
-        let newCARDS = { $push: { cards: { $each: playCards } } };
-        dbo
+        instanceOfMongoDataBase
           .collection("Juegos")
-          .updateOne(query, newCARDS, function (err, res) {
+          .updateOne({ id: gameNumber }, { $push: { cards: { $each: arrOfCards } } }, function (err, res) {
             if (err) throw err;
-            console.log("Added cards to game: ", gameID);
+            console.log("Added cards to game: ", gameNumber);
           });
-        res.send("DONE");
+        res.send(".");
       });
   });
 
-  app.get("/updateStat", async (req, res) => {
-    let params = getParams(req);
-    let gameID = params.id;
-    console.log("Update status game", gameID);
-    dbo
-      .collection("Juegos")
-      .find({ id: gameID })
-      .project({ _id: 0, cards: 1 })
+  app.get("/update", async (req, res) => {
+    let params = getInnerData(req);
+    let gameNumber = params.id;
+    console.log("Update game", gameNumber);
+    instanceOfMongoDataBase.collection("Juegos").find({ id: gameNumber }).project({ _id: 0, cards: 1 })
       .toArray(function (err, result) {
         res.send(result);
       });
@@ -78,76 +61,66 @@ MongoClient.connect(url, { useUnifiedTopology: true },function(err, db) {
 
 
   app.post("/createGame", async(req,res) => {
-    let params = getParams(req);
-    params = params.params;
-    let gameID = params.id;
-    let playCards = [];
-    dbo
-      .collection("mazoDB")
-      .find()
-      .toArray(function (err, result) {
-        for (let index = 0; index < 5; index++) {
-          let indice = Math.floor(Math.random() * 7);
-          const element = result[indice];
-          playCards.push(element);
+    let arrOfCards = [];
+    instanceOfMongoDataBase.collection("mazoDB").find().toArray(function (err, result) {
+        for (let i = 0; i < 5; i++) {
+          arrOfCards.push(result[Math.floor(Math.random() * 30)]);
         }
-        let pokecard = { id: gameID, cards: playCards }
-        dbo.collection("Juegos").insertOne(pokecard);
-        console.log("Game: ", gameID, "created")
-        res.send("DONE");
+        instanceOfMongoDataBase.collection("Juegos").insertOne({ id: getInnerData(req).params.id, cards: arrOfCards });
+        console.log(getInnerData(req).params.id, "stablished")
+        res.send(".");
       });
   })
 
   app.post("/add", async (req, res) => {
-    let params = getParams(req);
+    let params = getInnerData(req);
     params = params.params
-    let card_Type = params.type;
+    let tipoDeCarta = params.type;
     let name = params.name;
     let data;
-    if (card_Type == "pokemon") {
+    if (tipoDeCarta == "pokemon") {
       data = await getPokemonCard(name);
     } else {
       data = params.data;
     }
-    let pokecard = { name: name, typecard: card_Type, data: data };
-    dbo.collection("mazoDB").insertOne(pokecard);
-    res.send("DONE");
+    let pokecard = { name: name, typecard: tipoDeCarta, data: data };
+    instanceOfMongoDataBase.collection("mazoDB").insertOne(pokecard);
+    res.send(".");
   });
 
   app.get("/get/:pokename", (req, res) => {
-    let params = getParams(req);
+    let params = getInnerData(req);
     let name = params.pokename; 
-    dbo.collection("mazoDB").find({name : name}).toArray(function(err, result){ res.send(result) });
+    instanceOfMongoDataBase.collection("mazoDB").find({name : name}).toArray(function(err, result){ res.send(result) });
     
   });
   
   app.delete("/delete/:pokename", function (req, res) {
-    let params = getParams(req);
+    let params = getInnerData(req);
     let name = params.pokename; 
-    dbo.collection("mazoDB").remove({name : name})
+    instanceOfMongoDataBase.collection("mazoDB").remove({name : name})
     res.send("DELETED")
   });
   
   app.get("/get", function (req, res) {
-    dbo.collection("mazoDB").find().toArray(function(err, result){ res.send(result) });
+    instanceOfMongoDataBase.collection("mazoDB").find().toArray(function(err, result){ res.send(result) });
   });
   
   app.put("/put/:pokename", function (req, res) {
-    let params = getParams(req);
+    let params = getInnerData(req);
     params = params.params
     let pokename = params.name;
     let pokedata = params.data;
     var myquery = { name : pokename };
     var newvalues = {$set : {data : pokedata}};
-    dbo.collection("mazoDB").updateOne(myquery, newvalues, function(err, res) {
+    instanceOfMongoDataBase.collection("mazoDB").updateOne(myquery, newvalues, function(err, res) {
       if (err) throw err;
     });
     res.send("UPDATED");
   });
-  
 });
 
-function getParams(req) {
+function getInnerData(req) {
   return Object.assign({}, req.body, req.params, req.query);
 }
 
@@ -158,20 +131,12 @@ const getPokemonData = (name) => {
 };
 
 const getPokemonCard = async (name) => {
-  let APIDATA = await getPokemonData(name);
+  let response = await getPokemonData(name);
   let typeNames = [];
-  APIDATA.types.forEach((typeData) => {
+  response.types.forEach((typeData) => {
     typeNames.push(typeData.type.name);
   });
-  let POKECARD = {
-    name: APIDATA.name,
-    id: APIDATA.id,
-    weight: APIDATA.weight,
-    height: APIDATA.height,
-    base_experience: APIDATA.base_experience,
-    sprites: APIDATA.sprites,
-    typeNames,
-  };
-  return POKECARD;
+  let newCard = {name: response.name,id: response.id,weight: response.weight,height: response.height,base_experience: response.base_experience,sprites: response.sprites,typeNames,};
+  return newCard;
 };
 app.listen(3000);
