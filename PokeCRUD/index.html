@@ -1,7 +1,7 @@
 <html>
   <head>
     <style type="text/css">
-      .pokecard {display: flex; flex-direction: column; border: 1px solid rgb(0, 0, 0);}
+      .tarjeta {display: flex; flex-direction: column; border: 1px solid rgb(0, 0, 0);}
       h1 {font-size: 20px;}
     </style>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -9,7 +9,7 @@
   </head>
   <body>
     <div>    
-      Name: <input type="text" id="pokemon-name" />
+      Name: <input type="text" id="nombreDelPoke" />
       
       <select id="type" name="type">
         <option value="pokemon">Pokemon</option>
@@ -27,18 +27,18 @@
     </div>
     <br>
     <div>
-      Get card: <input type="text" id="get-pokemon-name" />
+      Get card: <input type="text" id="dameNombre" />
       <button id="getID">Get card</button>
     </div>
     <br>
     <div>
-      Delete card: <input type="text" id="delete-pokemon" />
+      Delete card: <input type="text" id="borraPokemon" />
       <button id="delete">Delete card</button>
     </div>
     <br>
     <div>
-      Update Card: <input type="text" id="update-pokemon" />
-      Data: <input type="text" id="data-update" />
+      Update Card: <input type="text" id="actualizaPokemon" />
+      Data: <input type="text" id="actualiza" />
       <button id="update">Update</button>
     </div>
     <br>

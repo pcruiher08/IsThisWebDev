@@ -1,16 +1,3 @@
-document.addEventListener("DOMContentLoaded", (ignore) => {
-    if (document.getElementById("index").innerHTML == "Pokemons") {
-      document.getElementById("add-item").addEventListener("click", getPokemon);
-      document.getElementById("getAll").addEventListener("click", getAll);
-      document.getElementById("getID").addEventListener("click", getName);
-      document.getElementById("delete").addEventListener("click", deleteCard);
-      document.getElementById("update").addEventListener("click", processUpdate);
-    }else{
-      document.getElementById("spielen").addEventListener("click", startGame);
-      document.getElementById("gimmeCards").addEventListener("click", getTheCards);
-    }
-  });
-
   function startGame() {
     axios
       .get(`http://localhost:3000/getGame`)
@@ -18,11 +5,11 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
         console.log("Conecting");
         let id = response.data;
         console.log(id)
-        localStorage.setItem("GameID", id);
-        let aux = localStorage.getItem("GameID");
+        localStorage.setItem("idDelJuego", id);
+        let aux = localStorage.getItem("idDelJuego");
         console.log(aux);
         document.getElementById("yaSeConecto").innerHTML = "Cards Space";
-        axios.post("http://localhost:3000/createGame", {params : { id : localStorage.getItem("GameID")}}).then((response) => { });
+        axios.post("http://localhost:3000/createGame", {params : { id : localStorage.getItem("idDelJuego")}}).then((response) => { });
         updateGame();
         setInterval(updateGame, 5000);
       }).catch((err) => {});}
@@ -31,7 +18,7 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
     axios
       .get(`http://localhost:3000/getCards`, {
         params: {
-          id: localStorage.getItem("GameID"),
+          id: localStorage.getItem("idDelJuego"),
         },
       })
       .then((response) => {
@@ -45,7 +32,7 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
     axios
       .get(`http://localhost:3000/update`, {
         params: {
-          id: localStorage.getItem("GameID"),
+          id: localStorage.getItem("idDelJuego"),
         },
       })
       .then((response) => {
@@ -63,7 +50,7 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
   }
   
   let byli = (name,id,weight,height,base_experience,image,types) => {
-    return `<div class="added-pokemon pokecard" >
+    return `<div class="added-pokemon tarjeta" >
             <h1>
                 Name: ${name} 
                 <h1> id: ${id} </h1> 
@@ -84,7 +71,7 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
   };
   
   let byliItem = (name,type,data) => {
-    return `<div class="added-pokemon pokecard">
+    return `<div class="added-pokemon tarjeta">
                 <h1>
                     Name: ${name} Type Card: ${type} 
                 </h1> 
@@ -95,8 +82,8 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
   };
   
   function processUpdate(){
-    let name = document.querySelector("#update-pokemon").value;
-    let data = document.querySelector("#data-update").value
+    let name = document.querySelector("#actualizaPokemon").value;
+    let data = document.querySelector("#actualiza").value
     axios
     .put(`http://localhost:3000/put/${name}`, {params: {name : name,data : data}})
       .then((response) => {})
@@ -115,7 +102,7 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
   
   function deleteCard(){
     axios
-      .delete(`http://localhost:3000/delete/${ document.querySelector("#delete-pokemon").value.toLowerCase()}`)
+      .delete(`http://localhost:3000/delete/${ document.querySelector("#borraPokemon").value.toLowerCase()}`)
       .then((response) => { })
       .catch((err) => { });
   }
@@ -126,7 +113,7 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
       .post(`http://localhost:3000/add`, {
         params: {
         type : document.querySelector("#type").value,
-        name : document.querySelector("#pokemon-name").value.toLowerCase(),
+        name : document.querySelector("#nombreDelPoke").value.toLowerCase(),
         data : document.querySelector("#data").value
       }})
       .then((res) => {
@@ -156,7 +143,7 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
   function getName(){
     document.getElementById("items").innerHTML = ""
     axios
-      .get(`http://localhost:3000/get/${document.querySelector("#get-pokemon-name").value.toLowerCase()}`)
+      .get(`http://localhost:3000/get/${document.querySelector("#dameNombre").value.toLowerCase()}`)
       .then((response) => {
         response.data.forEach(element => {
           if(element.typecard == "pokemon"){
@@ -168,3 +155,16 @@ document.addEventListener("DOMContentLoaded", (ignore) => {
       })
       .catch((err) => { errorAtRequest(err); });
   }
+
+  document.addEventListener("DOMContentLoaded", (ignore) => {
+    if (document.getElementById("index").innerHTML == "Pokemons") {
+      document.getElementById("add-item").addEventListener("click", getPokemon);
+      document.getElementById("getAll").addEventListener("click", getAll);
+      document.getElementById("getID").addEventListener("click", getName);
+      document.getElementById("delete").addEventListener("click", deleteCard);
+      document.getElementById("update").addEventListener("click", processUpdate);
+    }else{
+      document.getElementById("spielen").addEventListener("click", startGame);
+      document.getElementById("gimmeCards").addEventListener("click", getTheCards);
+    }
+  });

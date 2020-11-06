@@ -43,7 +43,7 @@ MongoClient.connect(url, { useUnifiedTopology: true },function(err, db) {
           .collection("Juegos")
           .updateOne({ id: gameNumber }, { $push: { cards: { $each: arrOfCards } } }, function (err, res) {
             if (err) throw err;
-            console.log("Added cards to game: ", gameNumber);
+            console.log("agregue cartas: ", gameNumber);
           });
         res.send(".");
       });
