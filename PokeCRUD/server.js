@@ -11,16 +11,15 @@ app.use(
 );
 
 var MongoClient = require('mongodb').MongoClient;
-var url = 'mongodb+srv://dbuser:dbuser@cluster0-jyf2g.mongodb.net/POKEMONGAME?retryWrites=true&w=majority';
+var url = 'mongodb+srv://dbuser:dbuser@cluster0-jyf2g.mongodb.net/PokeDB?retryWrites=true&w=majority';
 MongoClient.connect(url, { useUnifiedTopology: true },function(err, db) {
   if (err) throw err;
-  var dbo = db.db("POKEMONGAME");
+  var dbo = db.db("PokeDB");
 
   app.get("/getGame", function (req, res) {
     let oldGames = [];
-    //console.log("recorded");
     dbo
-      .collection("Games")
+      .collection("Juegos")
       .find()
       .project({ _id: 0, id: 1 })
       .toArray(function (err, result) {
@@ -44,7 +43,7 @@ MongoClient.connect(url, { useUnifiedTopology: true },function(err, db) {
     let playCards = [];
     let gameID = params.id;
     dbo
-      .collection("POKEDECK")
+      .collection("mazoDB")
       .find()
       .toArray(function (err, result){
         for (let i = 0; i < 5; i++) {
@@ -55,7 +54,7 @@ MongoClient.connect(url, { useUnifiedTopology: true },function(err, db) {
         let query = { id: gameID };
         let newCARDS = { $push: { cards: { $each: playCards } } };
         dbo
-          .collection("Games")
+          .collection("Juegos")
           .updateOne(query, newCARDS, function (err, res) {
             if (err) throw err;
             console.log("Added cards to game: ", gameID);
@@ -69,7 +68,7 @@ MongoClient.connect(url, { useUnifiedTopology: true },function(err, db) {
     let gameID = params.id;
     console.log("Update status game", gameID);
     dbo
-      .collection("Games")
+      .collection("Juegos")
       .find({ id: gameID })
       .project({ _id: 0, cards: 1 })
       .toArray(function (err, result) {
@@ -84,7 +83,7 @@ MongoClient.connect(url, { useUnifiedTopology: true },function(err, db) {
     let gameID = params.id;
     let playCards = [];
     dbo
-      .collection("POKEDECK")
+      .collection("mazoDB")
       .find()
       .toArray(function (err, result) {
         for (let index = 0; index < 5; index++) {
@@ -93,7 +92,7 @@ MongoClient.connect(url, { useUnifiedTopology: true },function(err, db) {
           playCards.push(element);
         }
         let pokecard = { id: gameID, cards: playCards }
-        dbo.collection("Games").insertOne(pokecard);
+        dbo.collection("Juegos").insertOne(pokecard);
         console.log("Game: ", gameID, "created")
         res.send("DONE");
       });
@@ -111,26 +110,26 @@ MongoClient.connect(url, { useUnifiedTopology: true },function(err, db) {
       data = params.data;
     }
     let pokecard = { name: name, typecard: card_Type, data: data };
-    dbo.collection("POKEDECK").insertOne(pokecard);
+    dbo.collection("mazoDB").insertOne(pokecard);
     res.send("DONE");
   });
 
   app.get("/get/:pokename", (req, res) => {
     let params = getParams(req);
     let name = params.pokename; 
-    dbo.collection("POKEDECK").find({name : name}).toArray(function(err, result){ res.send(result) });
+    dbo.collection("mazoDB").find({name : name}).toArray(function(err, result){ res.send(result) });
     
   });
   
   app.delete("/delete/:pokename", function (req, res) {
     let params = getParams(req);
     let name = params.pokename; 
-    dbo.collection("POKEDECK").remove({name : name})
+    dbo.collection("mazoDB").remove({name : name})
     res.send("DELETED")
   });
   
   app.get("/get", function (req, res) {
-    dbo.collection("POKEDECK").find().toArray(function(err, result){ res.send(result) });
+    dbo.collection("mazoDB").find().toArray(function(err, result){ res.send(result) });
   });
   
   app.put("/put/:pokename", function (req, res) {
@@ -140,7 +139,7 @@ MongoClient.connect(url, { useUnifiedTopology: true },function(err, db) {
     let pokedata = params.data;
     var myquery = { name : pokename };
     var newvalues = {$set : {data : pokedata}};
-    dbo.collection("POKEDECK").updateOne(myquery, newvalues, function(err, res) {
+    dbo.collection("mazoDB").updateOne(myquery, newvalues, function(err, res) {
       if (err) throw err;
     });
     res.send("UPDATED");
