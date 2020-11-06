@@ -1,0 +1,41 @@
+
+<html>
+    <head>
+      <style type="text/css">
+        
+        .items {
+          display: flex;
+          width: 100%;
+          padding: 2rem;
+          flex-wrap: wrap;
+        }
+  
+        .pokecard {
+          display: flex;
+          flex-direction: column;
+          border: 1px solid rgb(189, 189, 189);
+          padding: 2rem;
+          width: 10rem;
+          height: 15rem;
+          margin: 1rem;
+          border-radius: 0.2rem;
+        }
+        h1 {
+          font-size: 20px;
+        }
+      </style>
+      <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+      <script src="./utils.js"></script>
+    </head>
+    <body>
+      
+      <button id="Play">PLAY</button>
+  
+      <button id="Get-Cards">Get-Cards</button>
+      <!--<button id="Update">Update</button>-->
+      <p id="CON"></p>
+      <div id="items" class="items"></div>
+      <p id="index">Battleground</p>
+  
+    </body>
+  </html>
